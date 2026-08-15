@@ -98,5 +98,18 @@ if st.button('Predict Probability'):
     result = pipe.predict_proba(input_df)
     loss = result[0][0]
     win = result[0][1]
-    st.header(batting_team + "- " + str(round(win*100)) + "%")
-    st.header(bowling_team + "- " + str(round(loss*100)) + "%")
+    batting_probability = round(win * 100)
+    bowling_probability = round(loss * 100)
+
+    st.header(batting_team + "- " + str(batting_probability) + "%")
+    st.header(bowling_team + "- " + str(bowling_probability) + "%")
+
+    probability_df = pd.DataFrame(
+        {
+            "Team": [batting_team, bowling_team],
+            "Win Probability": [batting_probability, bowling_probability],
+        }
+    ).set_index("Team")
+
+    st.subheader("Win Probability Comparison")
+    st.bar_chart(probability_df)
