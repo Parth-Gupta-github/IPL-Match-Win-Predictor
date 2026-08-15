@@ -1,6 +1,7 @@
 import streamlit as st
 import pickle
 import pandas as pd
+from pathlib import Path
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -21,7 +22,14 @@ cities = ['Hyderabad', 'Bangalore', 'Mumbai', 'Indore', 'Kolkata', 'Delhi',
        'Visakhapatnam', 'Pune', 'Raipur', 'Ranchi', 'Abu Dhabi',
        'Sharjah', 'Mohali', 'Bengaluru']
 
-pipe = pickle.load(open('pipe.pkl','rb'))
+@st.cache_resource
+def load_model():
+    model_path = Path(__file__).with_name("pipe.pkl")
+    with model_path.open("rb") as file:
+        return pickle.load(file)
+
+
+pipe = load_model()
 
 st.markdown("""
     <style>
@@ -63,6 +71,22 @@ with col5:
     wickets = st.number_input('Wickets out')
 
 if st.button('Predict Probability'):
+    if batting_team == bowling_team:
+        st.error("Batting and bowling teams must be different.")
+        st.stop()
+    if overs <= 0:
+        st.error("Overs completed must be greater than 0.")
+        st.stop()
+    if overs >= 20:
+        st.error("Overs completed must be less than 20 during a chase.")
+        st.stop()
+    if target <= 0:
+        st.error("Target must be greater than 0.")
+        st.stop()
+    if score >= target:
+        st.error("Score should be less than the target while predicting chase probability.")
+        st.stop()
+
     runs_left = target - score
     balls_left = 120 - (overs*6)
     wickets = 10 - wickets
